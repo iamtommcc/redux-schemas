@@ -1,16 +1,98 @@
-# redux-models
+# redux-schemas
 
-[![Travis][build-badge]][build]
-[![npm package][npm-badge]][npm]
-[![Coveralls][coveralls-badge]][coveralls]
+`redux-schemas` is a small library designed to abstract away the verbosity & boilerplate that comes when using Redux, particularly when dealing with basic async operations with a REST API.
 
-Describe redux-models here.
+* Removes the need for action name constants
+* Creates your action creators (by default, Flux Standard Actions are generated)
+* Boilerplate 'meta' reducer logic for errors, `isLoading`, etc.
+* Scopes your reducers to the schema that you're dealing with
 
-[build-badge]: https://img.shields.io/travis/user/repo/master.png?style=flat-square
-[build]: https://travis-ci.org/user/repo
 
-[npm-badge]: https://img.shields.io/npm/v/npm-package.png?style=flat-square
-[npm]: https://www.npmjs.org/package/npm-package
+## Installation
 
-[coveralls-badge]: https://img.shields.io/coveralls/user/repo/master.png?style=flat-square
-[coveralls]: https://coveralls.io/github/user/repo
+`npm install redux-schemas --save`
+
+## Basic Usage
+
+
+```javascript
+// First, define your schema
+const books = createModel('books', {
+  
+  // A simple async method (thunk)
+  addBook: {  
+  	request: (payload) => api('http://example.com/', payload)  
+    
+    // Reducer on promise success
+    reduce: (state, action) => {
+      return {
+        ...state,
+        entities: state.entities.concat([action.payload])
+      }
+    }
+  },
+  
+  // A simple sync method
+  changeGenre: { 
+    reduce: (state, action) => {
+      return {
+        ...state,
+        genre: actionpayload
+      }
+    }
+    
+  }
+});
+
+
+
+dispatch(books.methods.addBook({name: '1984'}));
+```
+
+## Advanced Usage
+### Different reducers for initial/success/fail
+```javascript
+createModel('books', {
+  addBook: {
+    request: (payload) => api('http://example.com/', payload)  
+    reduce: (state, action) => {
+      return {
+        ...state,
+        entities: state.entities.concat([action.payload])
+      }
+    },
+    
+    // Your custom reducers for 'meta' info (like isLoading)
+    reduceMeta: {
+     initial: (state, action) => state,
+     success: (state, action) => state,     
+     failure: (state, action) => state,
+    }
+  }
+}
+```
+
+### Custom meta reducers
+By default, `redux-schemas` plays a generic "meta" reducer for async actions, *after* the main reducer has run. These default meta reducers are very basic and manage an `isLoading` key in the state, as well as an `error` key if necessary.
+
+You can use your own, or disable the functionality by setting reduceMeta to `null` or `false`.
+```javascript
+createModel('books', {
+  addBook: {
+    request: (payload) => api('http://example.com/', payload)  
+    reduce: (state, action) => {
+      return {
+        ...state,
+        entities: state.entities.concat([action.payload])
+      }
+    },
+    
+    // Your custom reducers for 'meta' info (like isLoading)
+    reduceMeta: {
+     initial: (state, action) => state,
+     success: (state, action) => state,     
+     failure: (state, action) => state,
+    }
+  }
+}
+```

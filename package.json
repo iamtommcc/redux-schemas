@@ -1,7 +1,7 @@
 {
-  "name": "redux-models",
-  "version": "1.0.0",
-  "description": "Describe redux-models here",
+  "name": "redux-schemas",
+  "version": "0.1.0",
+  "description": "A cure to Redux boilerplate.",
   "main": "lib/index.js",
   "module": "es/index.js",
   "files": [
@@ -17,12 +17,21 @@
     "test:watch": "nwb test --server"
   },
   "dependencies": {
+    "immutable": "^3.8.1",
+    "lodash": "^4.17.4",
+    "redux": "^3.6.0",
+    "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
-    "nwb": "0.15.x"
+    "axios": "^0.15.3",
+    "expect-predicate": "^1.0.0",
+    "flux-standard-action": "^1.1.0",
+    "nock": "^9.0.6",
+    "nwb": "0.15.x",
+    "redux-mock-store": "^1.2.2"
   },
-  "author": "",
-  "homepage": "",
+  "author": "Thomas McCarthy <tom@tomm.cc>",
+  "homepage": "https://tomm.cc/",
   "license": "MIT",
   "repository": ""
 }
