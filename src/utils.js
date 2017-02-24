@@ -4,6 +4,7 @@ export const ASYNC_FAILURE_SUFFIX = '_FAILURE';
 
 export function createReducer(initialState, handlers) {
   return function reducer(state = initialState, action) {
+    if (!state) return state;
     if (handlers.hasOwnProperty(action.type)) {
       return handlers[action.type](state, action)
     } else {

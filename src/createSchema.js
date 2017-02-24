@@ -3,8 +3,9 @@ import {
   generateAsyncActionCreator,
   generateActionCreator,
   ASYNC_SUCCESS_SUFFIX,
-  ASYNC_FAILURE_SUFFIX
-} from 'src/utils';
+  ASYNC_FAILURE_SUFFIX,
+  createReducer
+} from './utils';
 import { Iterable, fromJS } from 'immutable';
 import defaultMetaReducer from './default-meta-reducer';
 /**
@@ -33,9 +34,15 @@ function get (object, prop) {
 export function generateReducerFunction(mainReducer = null, metaReducer = null, scope = null) {
   return function (state, action) {
 
+    if (!state) return {};
+
     const scopedState = scope ? get(state, scope) : state;
 
-    let newState = scopedState;
+    let newState = scopedState || {};
+
+    if (!_.has(newState, scope)) {
+      newState[scope] = {}
+    };
 
     // Run the main reducer.
     if (mainReducer) newState = mainReducer(scopedState, action);
@@ -64,9 +71,9 @@ export function generateReducerFunction(mainReducer = null, metaReducer = null, 
  * @param methods
  * @returns {*}
  */
-export default function createModel(modelName, methods) {
+export default function createSchema(modelName, methods) {
 
-  return _.reduce(methods, (resultObject, method, methodName) => {
+  const schema = _.reduce(methods, (resultObject, method, methodName) => {
 
     const reduceMeta = _.isUndefined(method.reduceMeta)
       ? defaultMetaReducer
@@ -100,4 +107,6 @@ export default function createModel(modelName, methods) {
     reducers: {},
     actionCreators: {}
   });
+
+  return schema;
 }

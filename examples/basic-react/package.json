@@ -1,0 +1,26 @@
+{
+  "name": "basic-react",
+  "version": "1.0.0",
+  "description": "Describe basic-react here",
+  "private": true,
+  "scripts": {
+    "build": "nwb build-react-app",
+    "clean": "nwb clean-app",
+    "start": "nwb serve-react-app",
+    "test": "nwb test-react",
+    "test:coverage": "nwb test-react --coverage",
+    "test:watch": "nwb test-react --server"
+  },
+  "dependencies": {
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-redux": "^5.0.3",
+    "redux": "^3.6.0"
+  },
+  "devDependencies": {
+    "nwb": "0.15.x"
+  },
+  "author": "",
+  "license": "MIT",
+  "repository": ""
+}

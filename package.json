@@ -14,7 +14,8 @@
     "clean": "nwb clean-module",
     "test": "nwb test",
     "test:coverage": "nwb test --coverage",
-    "test:watch": "nwb test --server"
+    "test:watch": "nwb test --server",
+    "prepublish": "npm run build"
   },
   "dependencies": {
     "immutable": "^3.8.1",

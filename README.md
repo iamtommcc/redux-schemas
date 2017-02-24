@@ -17,7 +17,7 @@
 
 ```javascript
 // First, define your schema
-const books = createModel('books', {
+const books = createSchema('books', {
   
   // A simple async method (thunk)
   addBook: {  
@@ -50,23 +50,20 @@ dispatch(books.methods.addBook({name: '1984'}));
 ```
 
 ## Advanced Usage
-### Different reducers for initial/success/fail
+### Different reducers for initial/succeeding/failing requests
 ```javascript
-createModel('books', {
+createSchema('books', {
   addBook: {
     request: (payload) => api('http://example.com/', payload)  
-    reduce: (state, action) => {
-      return {
-        ...state,
-        entities: state.entities.concat([action.payload])
-      }
-    },
-    
-    // Your custom reducers for 'meta' info (like isLoading)
-    reduceMeta: {
-     initial: (state, action) => state,
-     success: (state, action) => state,     
-     failure: (state, action) => state,
+    reduce: {
+      initial: (state, action) => state,
+      success: (state, action) => {
+          return {
+          ...state,
+          entities: state.entities.concat([action.payload])
+        }
+      },
+      failure: (state, action) => state
     }
   }
 }
@@ -77,7 +74,7 @@ By default, `redux-schemas` plays a generic "meta" reducer for async actions, *a
 
 You can use your own, or disable the functionality by setting reduceMeta to `null` or `false`.
 ```javascript
-createModel('books', {
+createSchema('books', {
   addBook: {
     request: (payload) => api('http://example.com/', payload)  
     reduce: (state, action) => {

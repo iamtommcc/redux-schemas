@@ -1,6 +1,6 @@
-import createModel from 'createModel';
+import createSchema from 'createSchema';
 
-const testModel = createModel({
+const testModel = createSchema({
 
   key: 'books',
   actionName: 'BOOK',

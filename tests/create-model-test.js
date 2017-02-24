@@ -1,4 +1,4 @@
-import createModel from 'src/createModel';
+import createSchema from 'src/createSchema';
 import expect from 'expect';
 import expectPredicate from 'expect-predicate';
 expect.extend(expectPredicate);
@@ -11,12 +11,12 @@ import axios from 'axios';
 const middlewares = [ thunk ];
 const mockStore = configureMockStore(middlewares);
 
-describe('createModel', () => {
+describe('createSchema', () => {
   it('generates basic sync models', () => {
 
     const store = mockStore({counter: {number: 2}});
 
-const counter = createModel('counter', {
+const counter = createSchema('counter', {
   add: {
     reduce: (state, action) => { return { number: state.number + action.payload } }
   }
@@ -38,7 +38,7 @@ const counter = createModel('counter', {
 
     const store = mockStore({counter: {number: 2}});
 
-    const counter = createModel('counter', {
+    const counter = createSchema('counter', {
       add: {
         request: (payload) => new Promise(resolve => resolve(5)),
         reduce: {
