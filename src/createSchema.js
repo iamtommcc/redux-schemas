@@ -7,6 +7,7 @@ import {
   createReducer
 } from './utils';
 import { Iterable, fromJS } from 'immutable';
+import { combineReducers } from 'redux';
 import defaultMetaReducer from './default-meta-reducer';
 /**
  * Simple getter function to support either standard objects
@@ -33,19 +34,16 @@ function get (object, prop) {
  */
 export function generateReducerFunction(mainReducer = null, metaReducer = null, scope = null) {
   return function (state, action) {
-
     if (!state) return {};
 
-    const scopedState = scope ? get(state, scope) : state;
-
-    let newState = scopedState || {};
+    let newState = state;
 
     if (!_.has(newState, scope)) {
       newState[scope] = {}
     };
 
     // Run the main reducer.
-    if (mainReducer) newState = mainReducer(scopedState, action);
+    if (mainReducer) newState = mainReducer(newState, action);
 
     // If a meta reducer is provided, run it on the state
     // AFTER the normal reducer.
@@ -54,14 +52,7 @@ export function generateReducerFunction(mainReducer = null, metaReducer = null, 
     // Redux expects normal reducers to return brand new
     // global state, so if we're using scoping, we have
     // to manage that properly.
-    if (scope) {
-      // Immutable.js support
-      return Iterable.isIterable(state)
-        ? state.set(scope, newState)
-        : { ...state, [scope]: newState}
-    } else {
-      return newState;
-    }
+    return newState;
   }
 }
 
@@ -87,14 +78,14 @@ export default function createSchema(modelName, methods) {
     // If a request is passed, return a thunk.
     resultObject.actionCreators[methodName] =
       method.request
-        ? generateAsyncActionCreator(actionName, method.request)
-        : generateActionCreator(actionName);
+        ? generateAsyncActionCreator(actionName, method.request, method.actionCreator)
+        : generateActionCreator(actionName, method.actionCreator);
 
     if (_.isFunction(method.reduce)) {
       resultObject.reducers[actionName] = generateReducerFunction(method.reduce, (method.request ? (reduceMeta.inital || reduceMeta) : null), scope);
     } else {
       // If a request is passed, return a thunk.
-      resultObject.reducers[actionName] = generateReducerFunction(method.reduce.initial, (method.request ? reduceMeta.inital : null), scope);
+      resultObject.reducers[actionName] = generateReducerFunction(method.reduce.initial, (method.request ? reduceMeta.initial : null), scope);
 
       if (method.request) {
         resultObject.reducers[`${actionName}${ASYNC_SUCCESS_SUFFIX}`] = generateReducerFunction(method.reduce.success, reduceMeta.success, scope);
@@ -108,5 +99,14 @@ export default function createSchema(modelName, methods) {
     actionCreators: {}
   });
 
-  return schema;
+  const reducer = createReducer({}, schema.reducers);
+
+  // Define methods as a non enmurable property
+  // so it coesn't get picked up by combineReducers
+  Object.defineProperty(reducer, 'methods', {
+    value: schema.actionCreators,
+    writable: false,
+    enumerable: false
+  });
+  return reducer;
 }
