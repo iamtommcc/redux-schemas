@@ -3,9 +3,8 @@
 `redux-schemas` is a small library designed to abstract away the verbosity & boilerplate that comes when using Redux, particularly when dealing with basic async operations with a REST API.
 
 * Removes the need for action name constants
-* Creates your action creators (by default, Flux Standard Actions are generated)
-* Boilerplate 'meta' reducer logic for errors, `isLoading`, etc.
-* Scopes your reducers to the schema that you're dealing with
+* Creates your action creators (by default, Flux Standard Actions are generated, so the **payload** is all you worry about)
+* For async actions, splits reducers into a main one and a seperate one to handle loading state boilerplate.
 
 
 ## Installation
@@ -14,10 +13,9 @@
 
 ## Basic Usage
 
-
+First, define a schema
 ```javascript
-// First, define your schema
-const books = createSchema('books', {
+export default createSchema('books', {
   
   // A simple async method (thunk)
   addBook: {  
@@ -37,16 +35,40 @@ const books = createSchema('books', {
     reduce: (state, action) => {
       return {
         ...state,
-        genre: actionpayload
+        genre: action.payload
       }
     }
     
   }
 });
+```
+
+Then, throw your newly created schema(s) into a normal `combineReducers`. Be sure to apply a thunk middleware to your store.
+```javascript
+import { combineReducers, createStore, applyMiddleware } from 'redux';
+import books from 'schemas/books';
+import { thunk } from 'redux-schemas';
+
+const reducer = combineReducers({
+  books
+});
+
+const initialState = {};
+
+export default createStore(
+  reducer,
+  initialState,
+  applyMiddleware(thunk)
+);
+
+```
 
 
+```javascript
+import { store } from 'redux';
+import 'books' from 'schemas/books';
 
-dispatch(books.methods.addBook({name: '1984'}));
+store.dispatch(books.methods.addBook({name: '1984'}));
 ```
 
 ## Advanced Usage
@@ -54,7 +76,7 @@ dispatch(books.methods.addBook({name: '1984'}));
 ```javascript
 createSchema('books', {
   addBook: {
-    request: (payload) => api('http://example.com/', payload)  
+    request: (payload) => api('http://example.com/', payload),  
     reduce: {
       initial: (state, action) => state,
       success: (state, action) => {
@@ -69,10 +91,12 @@ createSchema('books', {
 }
 ```
 
-### Custom meta reducers
-By default, `redux-schemas` plays a generic "meta" reducer for async actions, *after* the main reducer has run. These default meta reducers are very basic and manage an `isLoading` key in the state, as well as an `error` key if necessary.
+### Async meta reducers
+As well as running your main reducer(s), `redux-schemas` play a meta reducer for async actions.
 
-You can use your own, or disable the functionality by setting reduceMeta to `null` or `false`.
+Writing nearly-identical reduction logic for things like `isLoading` keys across all your entities can be a chore. `redux-schemas` separates this from your "main" reduction logic to maximize reusability. 
+
+**By default** a generic catch-all loading reducer is provided that handles an `isLoading` key as well as an `error` key. You can use your own, or disable the functionality by setting `reduceLoading` to `null` or `false`.
 ```javascript
 createSchema('books', {
   addBook: {
@@ -84,12 +108,42 @@ createSchema('books', {
       }
     },
     
-    // Your custom reducers for 'meta' info (like isLoading)
-    reduceMeta: {
-     initial: (state, action) => state,
-     success: (state, action) => state,     
-     failure: (state, action) => state,
-    }
+    // Your custom reducers for async meta stuff (e.g. handling isLoading or error props)
+    // The following is what it's set to by default
+    reduceLoading: {
+      initial: (state, action) => {
+         return {
+           ...state,
+           isLoading: true,
+           error: null
+         }
+       },
+       success: (state, action) => {
+         return {
+           ...state,
+           isLoading: false,
+           error: null
+         };
+       },
+       failure: (state, action) => {
+         return {
+           ...state,
+           isLoading: false,
+           error: action.payload
+         }
+       }
   }
 }
 ```
+
+### Change default settings
+Just decorate the `createSchema` function & process as you please!
+
+Don't want to deal with deep merging yourself? No problem. We've provided a `schemaDefaults` helper that takes an object of method defaults,
+and generates a `createSchema` function that uses those defaults.
+```javascript
+import createSchema, { schemaDefaults } from 'redux-schemas';
+
+export function customSchemaCreator(schemaName, methods) {
+  return schemaDefaults({reduceLoading: null})(schemaName, methods);
+}

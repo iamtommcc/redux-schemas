@@ -34,7 +34,7 @@ export function generateAsyncActionCreator (actionName, request) {
 
       return request(payload)
         .then((response) => {
-          console.log(dispatch(createAction(_.toUpper(_.snakeCase(`${actionName}${ASYNC_SUCCESS_SUFFIX}`)), response)));
+          dispatch(createAction(_.toUpper(_.snakeCase(`${actionName}${ASYNC_SUCCESS_SUFFIX}`)), response));
         })
         .catch(error => {
           dispatch(createAction(_.toUpper(_.snakeCase(`${actionName}${ASYNC_FAILURE_SUFFIX}`)), error, true))

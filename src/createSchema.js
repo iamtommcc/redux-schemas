@@ -32,15 +32,11 @@ function get (object, prop) {
  * @param scope Optionally have the main & meta reducer 'scoped' to a specific key in the store
  * @returns {Function}
  */
-export function generateReducerFunction(mainReducer = null, metaReducer = null, scope = null) {
+export function generateReducerFunction(mainReducer = null, metaReducer = null) {
   return function (state, action) {
     if (!state) return {};
 
     let newState = state;
-
-    if (!_.has(newState, scope)) {
-      newState[scope] = {}
-    };
 
     // Run the main reducer.
     if (mainReducer) newState = mainReducer(newState, action);
@@ -57,18 +53,18 @@ export function generateReducerFunction(mainReducer = null, metaReducer = null, 
 }
 
 /**
- * Generates a schema based on the provided na
- * @param modelName {String} The name of the schema, used
- * @param methods
+ * Generates a schema based on the provided name.
+ * @param modelName {String} The name of the schema, used in the store
+ * @param methods {Object} Object of methods
  * @returns {*}
  */
 export default function createSchema(modelName, methods) {
 
   const schema = _.reduce(methods, (resultObject, method, methodName) => {
 
-    const reduceMeta = _.isUndefined(method.reduceMeta)
+    const reduceLoading = _.isUndefined(method.reduceLoading)
       ? defaultMetaReducer
-      : methodName.reduceMeta;
+      : method.reduceLoading || {};
 
     const scope = modelName;
 
@@ -82,14 +78,13 @@ export default function createSchema(modelName, methods) {
         : generateActionCreator(actionName, method.actionCreator);
 
     if (_.isFunction(method.reduce)) {
-      resultObject.reducers[actionName] = generateReducerFunction(method.reduce, (method.request ? (reduceMeta.inital || reduceMeta) : null), scope);
+      resultObject.reducers[actionName] = generateReducerFunction(method.reduce, (method.request ? (reduceLoading.initial || reduceLoading) : null), scope);
     } else {
-      // If a request is passed, return a thunk.
-      resultObject.reducers[actionName] = generateReducerFunction(method.reduce.initial, (method.request ? reduceMeta.initial : null), scope);
+      resultObject.reducers[actionName] = generateReducerFunction(method.reduce.initial, (method.request ? reduceLoading.initial : null), scope);
 
       if (method.request) {
-        resultObject.reducers[`${actionName}${ASYNC_SUCCESS_SUFFIX}`] = generateReducerFunction(method.reduce.success, reduceMeta.success, scope);
-        resultObject.reducers[`${actionName}${ASYNC_FAILURE_SUFFIX}`] = generateReducerFunction(method.reduce.failure, reduceMeta.failure, scope);
+        resultObject.reducers[`${actionName}${ASYNC_SUCCESS_SUFFIX}`] = generateReducerFunction(method.reduce.success, reduceLoading.success, scope);
+        resultObject.reducers[`${actionName}${ASYNC_FAILURE_SUFFIX}`] = generateReducerFunction(method.reduce.failure, reduceLoading.failure, scope);
       }
     }
 

@@ -9,11 +9,5 @@ module.exports = {
       devtool: 'inline-source-map'
     }
   },
-  karma: {
-    extra: {
-      singleRun: false
-    },
-    browsers: ['Chrome']
-  }
 
 }
