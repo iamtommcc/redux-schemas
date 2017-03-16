@@ -8,7 +8,7 @@ import {
 } from './utils';
 import { Iterable, fromJS } from 'immutable';
 import { combineReducers } from 'redux';
-import defaultMetaReducer from './default-meta-reducer';
+import defaultLoadingReducer from './default-loading-reducer';
 /**
  * Simple getter function to support either standard objects
  * or immutables.
@@ -66,7 +66,7 @@ export default function createSchema(modelName, methods) {
     methods,
     (resultObject, method, methodName) => {
       const reduceLoading = _.isUndefined(method.reduceLoading)
-        ? defaultMetaReducer
+        ? defaultLoadingReducer
         : method.reduceLoading || {};
 
       const scope = modelName;
