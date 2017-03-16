@@ -15,37 +15,38 @@ describe('createSchema', () => {
   it('generates basic sync models', () => {
     const counter = createSchema('counter', {
       add: {
-        reduce: (state, action) => { return { number: (state.number || 0) + action.payload } }
+        reduce: (state, action) => {
+          return { number: (state.number || 0) + action.payload };
+        }
       }
     });
-    const store = createStore(combineReducers({counter}), {}, middleware);
+    const store = createStore(combineReducers({ counter }), {}, middleware);
 
     const action = counter.methods.add(3);
     store.dispatch(action);
 
-    expect(
-      store.getState()
-    ).toEqual({ counter: { number: 3 } });
+    expect(store.getState()).toEqual({ counter: { number: 3 } });
   });
 
   it('generates basic async models', () => {
     const counter = createSchema('counter', {
       add: {
-        request: (payload) => new Promise(resolve => resolve(5)),
+        request: payload => new Promise(resolve => resolve(5)),
         reduce: {
           success: (state, action) => {
-            return { number: (state.number || 0) + action.payload }
+            return { number: (state.number || 0) + action.payload };
           }
         }
       }
     });
 
-    const store = createStore(combineReducers({counter}), {}, middleware);
+    const store = createStore(combineReducers({ counter }), {}, middleware);
 
     const action = counter.methods.add();
     return store.dispatch(action).then(() => {
-      expect(store.getState()).toEqual({counter: {number: 5, isLoading: false, error: null}});
+      expect(store.getState()).toEqual({
+        counter: { number: 5, isLoading: false, error: null }
+      });
     });
   });
-
 });

@@ -4,7 +4,7 @@ export default {
       ...state,
       isLoading: true,
       error: null
-    }
+    };
   },
   success: (state, action, options) => {
     return {
@@ -18,6 +18,6 @@ export default {
       ...state,
       isLoading: false,
       error: action.payload
-    }
+    };
   }
-}
+};

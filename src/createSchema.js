@@ -16,7 +16,7 @@ import defaultMetaReducer from './default-meta-reducer';
  * @param prop
  * @returns {*}
  */
-function get (object, prop) {
+function get(object, prop) {
   if (object && _.isFunction(object.get)) return object.get(prop);
   return _.get(object, prop);
 }
@@ -32,8 +32,11 @@ function get (object, prop) {
  * @param scope Optionally have the main & meta reducer 'scoped' to a specific key in the store
  * @returns {Function}
  */
-export function generateReducerFunction(mainReducer = null, metaReducer = null) {
-  return function (state, action) {
+export function generateReducerFunction(
+  mainReducer = null,
+  metaReducer = null
+) {
+  return function(state, action) {
     if (!state) return {};
 
     let newState = state;
@@ -49,7 +52,7 @@ export function generateReducerFunction(mainReducer = null, metaReducer = null) 
     // global state, so if we're using scoping, we have
     // to manage that properly.
     return newState;
-  }
+  };
 }
 
 /**
@@ -59,40 +62,67 @@ export function generateReducerFunction(mainReducer = null, metaReducer = null) 
  * @returns {*}
  */
 export default function createSchema(modelName, methods) {
+  const schema = _.reduce(
+    methods,
+    (resultObject, method, methodName) => {
+      const reduceLoading = _.isUndefined(method.reduceLoading)
+        ? defaultMetaReducer
+        : method.reduceLoading || {};
 
-  const schema = _.reduce(methods, (resultObject, method, methodName) => {
+      const scope = modelName;
 
-    const reduceLoading = _.isUndefined(method.reduceLoading)
-      ? defaultMetaReducer
-      : method.reduceLoading || {};
+      // Dynamically create a base action name if one is not provided.
+      const actionName = _.toUpper(
+        method.actionName || `${methodName}_${modelName}`
+      );
 
-    const scope = modelName;
-
-    // Dynamically create a base action name if one is not provided.
-    const actionName = _.toUpper(method.actionName || `${methodName}_${modelName}`);
-
-    // If a request is passed, return a thunk.
-    resultObject.actionCreators[methodName] =
-      method.request
-        ? generateAsyncActionCreator(actionName, method.request, method.actionCreator)
+      // If a request is passed, return a thunk.
+      resultObject.actionCreators[methodName] = method.request
+        ? generateAsyncActionCreator(
+            actionName,
+            method.request,
+            method.actionCreator
+          )
         : generateActionCreator(actionName, method.actionCreator);
 
-    if (_.isFunction(method.reduce)) {
-      resultObject.reducers[actionName] = generateReducerFunction(method.reduce, (method.request ? (reduceLoading.initial || reduceLoading) : null), scope);
-    } else {
-      resultObject.reducers[actionName] = generateReducerFunction(method.reduce.initial, (method.request ? reduceLoading.initial : null), scope);
+      if (_.isFunction(method.reduce)) {
+        resultObject.reducers[actionName] = generateReducerFunction(
+          method.reduce,
+          method.request ? reduceLoading.initial || reduceLoading : null,
+          scope
+        );
+      } else {
+        resultObject.reducers[actionName] = generateReducerFunction(
+          method.reduce.initial,
+          method.request ? reduceLoading.initial : null,
+          scope
+        );
 
-      if (method.request) {
-        resultObject.reducers[`${actionName}${ASYNC_SUCCESS_SUFFIX}`] = generateReducerFunction(method.reduce.success, reduceLoading.success, scope);
-        resultObject.reducers[`${actionName}${ASYNC_FAILURE_SUFFIX}`] = generateReducerFunction(method.reduce.failure, reduceLoading.failure, scope);
+        if (method.request) {
+          resultObject.reducers[
+            `${actionName}${ASYNC_SUCCESS_SUFFIX}`
+          ] = generateReducerFunction(
+            method.reduce.success,
+            reduceLoading.success,
+            scope
+          );
+          resultObject.reducers[
+            `${actionName}${ASYNC_FAILURE_SUFFIX}`
+          ] = generateReducerFunction(
+            method.reduce.failure,
+            reduceLoading.failure,
+            scope
+          );
+        }
       }
-    }
 
-    return resultObject
-  }, {
-    reducers: {},
-    actionCreators: {}
-  });
+      return resultObject;
+    },
+    {
+      reducers: {},
+      actionCreators: {}
+    }
+  );
 
   const reducer = createReducer({}, schema.reducers);
 
