@@ -44,7 +44,7 @@ export function generateReducerFunction(
     // Run the main reducer.
     if (mainReducer) newState = mainReducer(newState, action);
 
-    // If a meta reducer is provided, run it on the state
+    // If a meta (loading) reducer is provided, run it on the state
     // AFTER the normal reducer.
     if (metaReducer) newState = metaReducer(newState, action);
 
@@ -61,7 +61,12 @@ export function generateReducerFunction(
  * @param methods {Object} Object of methods
  * @returns {*}
  */
-export default function createSchema(modelName, methods) {
+export default function createSchema(
+  modelName,
+  methods,
+  selectors,
+  initialState
+) {
   const schema = _.reduce(
     methods,
     (resultObject, method, methodName) => {
@@ -126,12 +131,38 @@ export default function createSchema(modelName, methods) {
 
   const reducer = createReducer({}, schema.reducers);
 
+  // Generates an object of selectors.
+  // Can be easily fed into react-redux as
+  // a mapStateToProps function.
+  const selectorFunction = state => {
+    return _.mapValues(selectors, selector => selector(get(state, modelName)));
+  };
+
+  Object.defineProperty(reducer, 'schemaName', {
+    value: modelName,
+    writable: false,
+    enumerable: false
+  });
+
+  Object.defineProperty(reducer, 'initialState', {
+    value: initialState,
+    writable: false,
+    enumerable: false
+  });
+
   // Define methods as a non enmurable property
-  // so it coesn't get picked up by combineReducers
+  // so it doesn't get picked up by combineReducers
   Object.defineProperty(reducer, 'methods', {
     value: schema.actionCreators,
     writable: false,
     enumerable: false
   });
+
+  Object.defineProperty(reducer, 'selectors', {
+    value: selectorFunction,
+    writable: false,
+    enumerable: false
+  });
+
   return reducer;
 }

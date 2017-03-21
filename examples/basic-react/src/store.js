@@ -1,12 +1,4 @@
-import { combineReducers, createStore, applyMiddleware } from 'redux';
 import books from './schemas/books';
-import { thunk } from '../../../src/index';
+import createSchemaStore from '../../../src/create-schema-store';
 
-const rootReducer = combineReducers({
-  books
-});
-export default createStore(
-  rootReducer,
-  { books: { count: 0 } },
-  applyMiddleware(thunk)
-);
+export default createSchemaStore([books]);

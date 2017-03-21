@@ -12,7 +12,7 @@ import { combineReducers, createStore, applyMiddleware } from 'redux';
 const middleware = applyMiddleware(thunk);
 
 describe('createSchema', () => {
-  it('generates basic sync models', () => {
+  it('generates basic sync reducers', () => {
     const counter = createSchema('counter', {
       add: {
         reduce: (state, action) => {
@@ -28,7 +28,7 @@ describe('createSchema', () => {
     expect(store.getState()).toEqual({ counter: { number: 3 } });
   });
 
-  it('generates basic async models', () => {
+  it('generates basic async reducers', () => {
     const counter = createSchema('counter', {
       add: {
         request: payload => new Promise(resolve => resolve(5)),
@@ -48,5 +48,31 @@ describe('createSchema', () => {
         counter: { number: 5, isLoading: false, error: null }
       });
     });
+  });
+
+  it('generates selectors', () => {
+    const counter = createSchema(
+      'counter',
+      {
+        add: {
+          reduce: state => state
+        }
+      },
+      {
+        fixedSelector: state => 'Test',
+        dynamicSelector: state => state
+      }
+    );
+
+    const store = createStore(
+      combineReducers({ counter }),
+      { counter: 4 },
+      middleware
+    );
+
+    const state = store.getState();
+
+    expect(counter.selectors(state).fixedSelector).toBe('Test');
+    expect(counter.selectors(state).dynamicSelector).toBe(4);
   });
 });

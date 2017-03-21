@@ -3,8 +3,9 @@
 `redux-schemas` is a small library designed to abstract away the verbosity & boilerplate that comes when using Redux, particularly when dealing with basic async operations with a REST API.
 
 * Removes the need for action name constants
-* Creates your action creators (by default, Flux Standard Actions are generated, so the **payload** is all you worry about)
-* For async actions, splits reducers into a main one and a seperate one to handle loading state boilerplate.
+* No action creators, just methods that handle action dispatching & side effects.
+* Reducers, selectors & initial state for a particular entity all live under the one roof.
+* For async actions, you can split reducers into a main one and a seperate one to handle loading state boilerplate.
 
 
 ## Installation
@@ -40,29 +41,21 @@ export default createSchema('books', {
     }
     
   }
+}, {
+  getBookCount: state => state.entities.length
 });
 ```
 
-Then, throw your newly created schema(s) into a normal `combineReducers`. Be sure to apply a thunk middleware to your store.
+Then, create your store by throwing all your schemas in an array & using `createSchemaStore`
 ```javascript
-import { combineReducers, createStore, applyMiddleware } from 'redux';
 import books from 'schemas/books';
-import { thunk } from 'redux-schemas';
+import { createSchemaStore } from 'redux-schemas';
 
-const reducer = combineReducers({
+export default createSchemaStore([
   books
-});
-
-const initialState = {};
-
-export default createStore(
-  reducer,
-  initialState,
-  applyMiddleware(thunk)
-);
+]);
 
 ```
-
 
 ```javascript
 import { store } from 'redux';
@@ -70,6 +63,23 @@ import 'books' from 'schemas/books';
 
 store.dispatch(books.methods.addBook({name: '1984'}));
 ```
+## API
+
+### createSchema
+
+| Parameter | Description |
+| --- | --- |
+| `schemaName` | Name of the schema - used for actions & the key for this particular slice of state |
+| `methods` | Object of methods. At the very least, a method must have a reduce prop. |
+| `selectors` (optional) | Object of selector functions that take `state` as a parameter (note: `state` is scoped to the schema key). |
+| `initialState` (optional) | Initial state for this schema key. |
+
+### createSchemaStore
+
+| Parameter | Description |
+| --- | --- |
+| `schemaArray` | Array of schemas to build the store with |
+| `...createStoreArgs` | The standard `createStore` args which are applied (merged) on top of what is generated from the schema array. This lets you throw in your own special reducers, initial state, middleware, etc. just as you normally world. |
 
 ## Advanced Usage
 ### Different reducers for initial/succeeding/failing requests
@@ -136,7 +146,7 @@ createSchema('books', {
 }
 ```
 
-### Change default settings
+### Change default method settings
 Just decorate the `createSchema` function & process as you please!
 
 Don't want to deal with deep merging yourself? No problem. We've provided a `schemaDefaults` helper that takes an object of method defaults,
@@ -147,3 +157,4 @@ import createSchema, { schemaDefaults } from 'redux-schemas';
 export function customSchemaCreator(schemaName, methods) {
   return schemaDefaults({reduceLoading: null})(schemaName, methods);
 }
+```

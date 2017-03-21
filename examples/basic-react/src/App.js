@@ -5,21 +5,14 @@ import store from './store';
 import { Provider, connect } from 'react-redux';
 import books from './schemas/books';
 
-@connect(
-  state => {
-    return {
-      books: state.books
-    };
-  },
-  books.methods
-)
+@connect(books.selectors, books.methods)
 class BookScreen extends React.PureComponent {
   render() {
-    const { books, add } = this.props;
+    const { add, count } = this.props;
     return (
       <div className="App-heading App-flex">
         <h2>Books</h2>
-        <strong>Books in storage: {books.count}</strong>
+        <strong>Books in storage: {count}</strong>
         <a onClick={add}>Add Book</a>
       </div>
     );
