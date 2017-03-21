@@ -1,12 +1,12 @@
 import createSchema from '../../../../src/createSchema';
 
-export default createSchema('counters', {
-	add: {
-		request: (payload) => new Promise(resolve => resolve(5)),
-		reduce: {
-			success: (state, action) => {
-				return { number: state.number + action.payload }
-			}
-		}
-	}
+export default createSchema('books', {
+  add: {
+    request: payload => new Promise(resolve => resolve(1)),
+    reduce: {
+      success: (state, action) => {
+        return { count: state.count + action.payload };
+      }
+    }
+  }
 });

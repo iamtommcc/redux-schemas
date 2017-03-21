@@ -1,12 +1,12 @@
-import { combineReducers, createStore } from 'redux';
+import { combineReducers, createStore, applyMiddleware } from 'redux';
 import books from './schemas/books';
+import { thunk } from '../../../src/index';
 
 const rootReducer = combineReducers({
   books
 });
-
 export default createStore(
   rootReducer,
-  {},
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+  { books: { count: 0 } },
+  applyMiddleware(thunk)
 );
