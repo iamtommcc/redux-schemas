@@ -20,8 +20,8 @@ export default createSchema('books', {
   
   // A simple async method (thunk)
   addBook: {  
-  	request: (payload) => api('http://example.com/', payload)  
-    
+    request: (payload) => api('http://example.com/', payload)
+
     // Reducer on promise success
     reduce: (state, action) => {
       return {
@@ -58,7 +58,7 @@ export default createSchemaStore([
 ```
 
 ```javascript
-import { store } from 'redux';
+import { store } from 'yourStore';
 import 'books' from 'schemas/books';
 
 store.dispatch(books.methods.addBook({name: '1984'}));
@@ -81,7 +81,29 @@ store.dispatch(books.methods.addBook({name: '1984'}));
 | `schemaArray` | Array of schemas to build the store with |
 | `...createStoreArgs` | The standard `createStore` args which are applied (merged) on top of what is generated from the schema array. This lets you throw in your own special reducers, initial state, middleware, etc. just as you normally world. |
 
-## Advanced Usage
+## More Usage Examples
+
+### React
+```javascript
+import React from 'react';
+import { connect } from 'react-redux';
+import books from 'schemas/books';
+
+@connect(books.selectors, books.methods)
+class BookScreen extends React.Component {
+  render() {
+    const { add, count } = this.props;
+    return (
+      <div>
+        <h2>Books</h2>
+        <strong>Count: {count}</strong>
+        <a onClick={add}>Add Book</a>
+      </div>
+    );
+  }
+}
+```
+
 ### Different reducers for initial/succeeding/failing requests
 ```javascript
 createSchema('books', {
