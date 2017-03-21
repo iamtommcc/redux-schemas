@@ -94,11 +94,11 @@ class BookScreen extends React.Component {
   render() {
     const { add, count } = this.props;
     return (
-      <div>
+      <test>
         <h2>Books</h2>
         <strong>Count: {count}</strong>
         <a onClick={add}>Add Book</a>
-      </div>
+      </test>
     );
   }
 }
@@ -176,7 +176,7 @@ and generates a `createSchema` function that uses those defaults.
 ```javascript
 import createSchema, { schemaDefaults } from 'redux-schemas';
 
-export function customSchemaCreator(schemaName, methods) {
-  return schemaDefaults({reduceLoading: null})(schemaName, methods);
+export function customSchemaCreator(schemaName, methods, selectors, initialState) {
+  return schemaDefaults({reduceLoading: null})(schemaName, methods, selectors, initialState);
 }
 ```
