@@ -6,9 +6,9 @@ import {
   ASYNC_FAILURE_SUFFIX,
   createReducer
 } from './utils';
-import { Iterable, fromJS } from 'immutable';
 import { combineReducers } from 'redux';
 import defaultLoadingReducer from './default-loading-reducer';
+
 /**
  * Simple getter function to support either standard objects
  * or immutables.
@@ -25,11 +25,9 @@ function get(object, prop) {
  * Generates a normal Redux reducer function that takes
  * an action and returns the new global state.
  *
- * Handles 'scoping' the state to a specific key.
  *
  * @param mainReducer The 'main' reduce function
  * @param metaReducer An optional meta reducer that runs after the main
- * @param scope Optionally have the main & meta reducer 'scoped' to a specific key in the store
  * @returns {Function}
  */
 export function generateReducerFunction(
@@ -46,7 +44,8 @@ export function generateReducerFunction(
 
     // If a meta (loading) reducer is provided, run it on the state
     // AFTER the normal reducer.
-    if (metaReducer) newState = metaReducer(newState, action);
+    if (metaReducer && _.isFunction(metaReducer))
+      newState = metaReducer(newState, action);
 
     // Redux expects normal reducers to return brand new
     // global state, so if we're using scoping, we have
@@ -58,17 +57,17 @@ export function generateReducerFunction(
 /**
  * Generates a schema based on the provided name.
  * @param modelName {String} The name of the schema, used in the store
- * @param methods {Object} Object of methods
+ * @param actionCreators {Object} Object of action creators
  * @returns {*}
  */
 export default function createSchema(
   modelName,
-  methods,
+  actionCreators,
   selectors,
   initialState
 ) {
   const schema = _.reduce(
-    methods,
+    actionCreators,
     (resultObject, method, methodName) => {
       const reduceLoading = _.isUndefined(method.reduceLoading)
         ? defaultLoadingReducer
@@ -78,7 +77,7 @@ export default function createSchema(
 
       // Dynamically create a base action name if one is not provided.
       const actionName = _.toUpper(
-        method.actionName || `${methodName}_${modelName}`
+        method.actionName || `${modelName}_${methodName}`
       );
 
       // If a request is passed, return a thunk.
@@ -92,7 +91,7 @@ export default function createSchema(
 
       if (_.isFunction(method.reduce)) {
         resultObject.reducers[actionName] = generateReducerFunction(
-          method.reduce,
+          state => state,
           method.request ? reduceLoading.initial || reduceLoading : null,
           scope
         );
@@ -102,23 +101,23 @@ export default function createSchema(
           method.request ? reduceLoading.initial : null,
           scope
         );
+      }
 
-        if (method.request) {
-          resultObject.reducers[
-            `${actionName}${ASYNC_SUCCESS_SUFFIX}`
-          ] = generateReducerFunction(
-            method.reduce.success,
-            reduceLoading.success,
-            scope
-          );
-          resultObject.reducers[
-            `${actionName}${ASYNC_FAILURE_SUFFIX}`
-          ] = generateReducerFunction(
-            method.reduce.failure,
-            reduceLoading.failure,
-            scope
-          );
-        }
+      if (method.request) {
+        resultObject.reducers[
+          `${actionName}${ASYNC_SUCCESS_SUFFIX}`
+        ] = generateReducerFunction(
+          method.reduce.success || method.reduce,
+          reduceLoading.success,
+          scope
+        );
+        resultObject.reducers[
+          `${actionName}${ASYNC_FAILURE_SUFFIX}`
+        ] = generateReducerFunction(
+          method.reduce.failure,
+          reduceLoading.failure,
+          scope
+        );
       }
 
       return resultObject;
@@ -129,13 +128,20 @@ export default function createSchema(
     }
   );
 
-  const reducer = createReducer({}, schema.reducers);
+  // Redux only scopes one level deep by default
+  // We need to scope a little further
+  const reducer = (state = {}, action) => {
+    return {
+      [modelName]: createReducer({}, schema.reducers)(state[modelName], action)
+    };
+  };
 
   // Generates an object of selectors.
   // Can be easily fed into react-redux as
   // a mapStateToProps function.
   const selectorFunction = state => {
-    return _.mapValues(selectors, selector => selector(get(state, modelName)));
+    return _.mapValues(selectors, selector =>
+      selector(get(state, `${reducer.namespace}.${modelName}`)));
   };
 
   Object.defineProperty(reducer, 'schemaName', {
@@ -150,9 +156,9 @@ export default function createSchema(
     enumerable: false
   });
 
-  // Define methods as a non enmurable property
+  // Define actionCreators as a non enmurable property
   // so it doesn't get picked up by combineReducers
-  Object.defineProperty(reducer, 'methods', {
+  Object.defineProperty(reducer, 'actionCreators', {
     value: schema.actionCreators,
     writable: false,
     enumerable: false
@@ -160,7 +166,13 @@ export default function createSchema(
 
   Object.defineProperty(reducer, 'selectors', {
     value: selectorFunction,
-    writable: false,
+    writable: true,
+    enumerable: false
+  });
+
+  Object.defineProperty(reducer, 'namespace', {
+    value: 'schemas',
+    writable: true,
     enumerable: false
   });
 

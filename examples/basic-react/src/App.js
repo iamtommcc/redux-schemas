@@ -4,16 +4,18 @@ import React from 'react';
 import store from './store';
 import { Provider, connect } from 'react-redux';
 import books from './schemas/books';
+import { withSchemas } from '../../../src/index';
 
-@connect(books.selectors, books.methods)
+@connect(...withSchemas(books))
 class BookScreen extends React.PureComponent {
   render() {
-    const { add, count } = this.props;
+    console.log(this.props);
+    const { books } = this.props;
     return (
       <div className="App-heading App-flex">
         <h2>Books</h2>
-        <strong>Books in storage: {count}</strong>
-        <a onClick={add}>Add Book</a>
+        <strong>Books in storage: {books.bookCount}</strong>
+        <a onClick={() => books.addBook()}>Add Book</a>
       </div>
     );
   }

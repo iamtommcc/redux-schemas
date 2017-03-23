@@ -2,13 +2,14 @@ import _ from 'lodash';
 export const ASYNC_SUCCESS_SUFFIX = '_SUCCESS';
 export const ASYNC_FAILURE_SUFFIX = '_FAILURE';
 
-export function createReducer(initialState, handlers) {
+export function createReducer(initialState, handlers, scope) {
   return function reducer(state = initialState, action) {
-    if (!state) return state;
+    const scopedState = scope ? _.get(state, scope) : state;
+    if (!scopedState) return scopedState;
     if (handlers.hasOwnProperty(action.type)) {
-      return handlers[action.type](state, action);
+      return handlers[action.type](scopedState, action);
     } else {
-      return state;
+      return scopedState;
     }
   };
 }

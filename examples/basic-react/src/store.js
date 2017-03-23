@@ -1,4 +1,15 @@
 import books from './schemas/books';
-import createSchemaStore from '../../../src/create-schema-store';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { combineSchemas, thunk } from '../../../src/index';
 
-export default createSchemaStore([books]);
+const schemas = combineSchemas([books]);
+
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+export default createStore(
+  combineReducers({ schemas }),
+  {
+    schemas: schemas.initialState
+  },
+  composeEnhancers(applyMiddleware(thunk))
+);

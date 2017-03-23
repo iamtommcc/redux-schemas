@@ -3,19 +3,23 @@ import createSchema from '../../../../src/createSchema';
 export default createSchema(
   'books',
   {
-    add: {
+    addBook: {
       request: payload => new Promise(resolve => resolve(1)),
-      reduce: {
-        success: (state, action) => {
-          return { count: state.count + action.payload };
-        }
-      }
+      reduce: (state, action) => {
+        console.log(state, 'state received by reduce');
+        console.log(state.bookCount, action.payload);
+        return { bookCount: state.bookCount + action.payload };
+      },
+      reduceLoading: null
     }
   },
   {
-    count: state => state.count
+    bookCount: state => {
+      console.log(state);
+      return state.bookCount;
+    }
   },
   {
-    count: 0
+    bookCount: 0
   }
 );

@@ -22,7 +22,7 @@ describe('schemaDefaults', () => {
 
     const store = createStore(combineReducers({ counter }), {}, middleware);
 
-    const action = counter.methods.add();
+    const action = counter.actionCreators.add();
     return store.dispatch(action).then(() => {
       expect(store.getState()).toEqual({ counter: { number: 5 } });
     });
@@ -53,7 +53,7 @@ describe('schemaDefaults', () => {
 
     const store = createStore(combineReducers({ counter }), {}, middleware);
 
-    const action = counter.methods.add();
+    const action = counter.actionCreators.add();
     return store.dispatch(action).then(() => {
       expect(store.getState()).toEqual({
         counter: { isLoading: 'ALL DONE', number: 5 }

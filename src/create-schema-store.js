@@ -13,17 +13,19 @@ export default function createSchemaStore(schemaArray, ...createStoreArgs) {
 
   // Combine schema initial stores with an overriding
   // initial store parameter (if provided);
-  const initialState = _.assign(
-    _.reduce(
-      schemaArray,
-      (acc, value) => {
-        acc[value.schemaName] = value.initialState;
-        return acc;
-      },
-      {}
-    ),
-    createStoreArgs[1]
-  );
+  const initialState = {
+    schemas: _.assign(
+      _.reduce(
+        schemaArray,
+        (acc, value) => {
+          acc[value.schemaName] = value.initialState;
+          return acc;
+        },
+        {}
+      ),
+      createStoreArgs[1]
+    )
+  };
 
   const enhancer = createStoreArgs[2]
     ? compose(applyMiddleware(thunk), createStoreArgs[2])
