@@ -20,7 +20,16 @@ export default function withSchemas() {
     return schemaArray.reduce(
       (acc, schema) => {
         acc[schema.schemaName] = _.mapValues(schema.actionCreators, action =>
-          payload => action(payload)(dispatch));
+          payload => {
+            const actionResult = action(payload);
+
+            if (_.isFunction(actionResult)) {
+              return actionResult(dispatch);
+            } else {
+              return dispatch(actionResult);
+            }
+          });
+
         return acc;
       },
       {}

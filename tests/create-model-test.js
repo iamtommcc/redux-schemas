@@ -9,23 +9,19 @@ import * as utils from 'src/utils';
 import axios from 'axios';
 import { combineSchemas } from '../src/index';
 import { combineReducers, createStore, applyMiddleware } from 'redux';
+import testingSchema from './testing-schema';
 
 const middleware = applyMiddleware(thunk);
+const counter = createSchema('counter', ...testingSchema);
+const schemas = combineSchemas([counter]);
+let store;
 
 describe('createSchema', () => {
+  beforeEach(() => {
+    store = createStore(combineReducers({ schemas }), {}, middleware);
+  });
+
   it('generates basic sync reducers', () => {
-    const counter = createSchema('counter', {
-      add: {
-        reduce: (state, action) => {
-          console.log(state, action.payload);
-          return { number: (state.number || 0) + action.payload };
-        }
-      }
-    });
-
-    const schemas = combineSchemas([counter]);
-    const store = createStore(combineReducers({ schemas }), {}, middleware);
-
     const action = counter.actionCreators.add(3);
     store.dispatch(action);
 
@@ -33,21 +29,8 @@ describe('createSchema', () => {
   });
 
   it('generates basic async reducers', () => {
-    const counter = createSchema('counter', {
-      add: {
-        request: payload => new Promise(resolve => resolve(5)),
-        reduce: {
-          success: (state, action) => {
-            return { number: (state.number || 0) + action.payload };
-          }
-        }
-      }
-    });
+    const action = counter.actionCreators.addAsync(5);
 
-    const schemas = combineSchemas([counter]);
-    const store = createStore(combineReducers({ schemas }), {}, middleware);
-
-    const action = counter.actionCreators.add();
     return store.dispatch(action).then(() => {
       expect(store.getState()).toEqual({
         schemas: {
@@ -57,30 +40,38 @@ describe('createSchema', () => {
     });
   });
 
-  it('generates selectors', () => {
-    const counter = createSchema(
-      'counter',
-      {
-        add: {
-          reduce: state => state
-        }
-      },
-      {
-        fixedSelector: state => 'Test',
-        dynamicSelector: state => state
-      }
-    );
-
-    const schemas = combineSchemas([counter]);
-    const store = createStore(
-      combineReducers({ schemas }),
-      { schemas: { counter: 4 } },
+  it('handles custom namespaces/state trees', () => {
+    const customNamespaceSchemas = combineSchemas(counter, 'foo.bar');
+    store = createStore(
+      combineReducers({ foo: customNamespaceSchemas }),
+      {},
       middleware
     );
+    const action = counter.actionCreators.addAsync(5);
 
+    expect(store.getState()).toEqual({
+      foo: {
+        bar: {
+          counter: { number: 0 }
+        }
+      }
+    });
+
+    return store.dispatch(action).then(() => {
+      expect(store.getState()).toEqual({
+        foo: {
+          bar: {
+            counter: { number: 5, isLoading: false, error: null }
+          }
+        }
+      });
+    });
+  });
+
+  it('generates selectors', () => {
     const state = store.getState();
 
     expect(counter.selectors(state).fixedSelector).toBe('Test');
-    expect(counter.selectors(state).dynamicSelector).toBe(4);
+    expect(counter.selectors(state).dynamicSelector).toBe(0);
   });
 });

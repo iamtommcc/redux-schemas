@@ -9,13 +9,16 @@ import { withSchemas } from '../../../src/index';
 @connect(...withSchemas(books))
 class BookScreen extends React.PureComponent {
   render() {
-    console.log(this.props);
     const { books } = this.props;
     return (
       <div className="App-heading App-flex">
         <h2>Books</h2>
-        <strong>Books in storage: {books.bookCount}</strong>
-        <a onClick={() => books.addBook()}>Add Book</a>
+        <strong>Book count: {books.bookCount}</strong>
+        {books.isLoading && <span className="loading">Loading...</span>}
+        <a className="button" onClick={() => books.addBook(1)}>Add Book</a>
+        <a className="button" onClick={() => books.addBookAsync(1)}>
+          Add Book (async)
+        </a>
       </div>
     );
   }

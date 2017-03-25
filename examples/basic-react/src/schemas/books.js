@@ -3,21 +3,22 @@ import createSchema from '../../../../src/createSchema';
 export default createSchema(
   'books',
   {
-    addBook: {
-      request: payload => new Promise(resolve => resolve(1)),
+    addBookAsync: {
+      request: payload =>
+        new Promise(resolve => setTimeout(() => resolve(payload), 1000)),
       reduce: (state, action) => {
-        console.log(state, 'state received by reduce');
-        console.log(state.bookCount, action.payload);
         return { bookCount: state.bookCount + action.payload };
-      },
-      reduceLoading: null
+      }
+    },
+    addBook: {
+      reduce: (state, action) => {
+        return { bookCount: state.bookCount + action.payload };
+      }
     }
   },
   {
-    bookCount: state => {
-      console.log(state);
-      return state.bookCount;
-    }
+    bookCount: state => state.bookCount,
+    isLoading: state => state.isLoading
   },
   {
     bookCount: 0

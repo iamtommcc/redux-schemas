@@ -10,6 +10,7 @@
 .App-flex {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
@@ -22,27 +23,16 @@
   z-index: 2;
 }
 
-.App-react {
-  color: #00d8ff;
-  text-decoration: overline underline;
-}
-
-.App-logo {
-  max-height: 30vh;
-  max-width: 30vh;
-}
-
-.App-instructions {
-  background-color: #f8f8f8;
-  color: #222;
-  font-size: 3vh;
-  line-height: 1.5;
-  padding: 0 1em;
-}
-
-.App-instructions code {
-  background-color: #222;
-  color: #00d8ff;
-  padding: .2em .3em;
-  border-radius: .2em;
+.button {
+  display: block;
+  width: 200px;
+  border: 1px solid white;
+  padding: 20px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 18px;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
 }

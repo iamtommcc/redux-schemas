@@ -8,8 +8,6 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 export default createStore(
   combineReducers({ schemas }),
-  {
-    schemas: schemas.initialState
-  },
+  {},
   composeEnhancers(applyMiddleware(thunk))
 );

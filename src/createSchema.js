@@ -73,11 +73,9 @@ export default function createSchema(
         ? defaultLoadingReducer
         : method.reduceLoading || {};
 
-      const scope = modelName;
-
       // Dynamically create a base action name if one is not provided.
       const actionName = _.toUpper(
-        method.actionName || `${modelName}_${methodName}`
+        method.actionName || `${modelName}_${_.snakeCase(methodName)}`
       );
 
       // If a request is passed, return a thunk.
@@ -91,15 +89,13 @@ export default function createSchema(
 
       if (_.isFunction(method.reduce)) {
         resultObject.reducers[actionName] = generateReducerFunction(
-          state => state,
-          method.request ? reduceLoading.initial || reduceLoading : null,
-          scope
+          method.request ? state => state : method.reduce,
+          method.request ? reduceLoading.initial || reduceLoading : null
         );
       } else {
         resultObject.reducers[actionName] = generateReducerFunction(
           method.reduce.initial,
-          method.request ? reduceLoading.initial : null,
-          scope
+          method.request ? reduceLoading.initial : null
         );
       }
 
@@ -108,15 +104,13 @@ export default function createSchema(
           `${actionName}${ASYNC_SUCCESS_SUFFIX}`
         ] = generateReducerFunction(
           method.reduce.success || method.reduce,
-          reduceLoading.success,
-          scope
+          reduceLoading.success
         );
         resultObject.reducers[
           `${actionName}${ASYNC_FAILURE_SUFFIX}`
         ] = generateReducerFunction(
           method.reduce.failure,
-          reduceLoading.failure,
-          scope
+          reduceLoading.failure
         );
       }
 
@@ -131,9 +125,13 @@ export default function createSchema(
   // Redux only scopes one level deep by default
   // We need to scope a little further
   const reducer = (state = {}, action) => {
-    return {
-      [modelName]: createReducer({}, schema.reducers)(state[modelName], action)
-    };
+    const keylessNamespace = reducer.namespace.split('.').slice(1);
+    const reducedState = createReducer(initialState, schema.reducers)(
+      _.get(state, keylessNamespace.concat([modelName])),
+      action
+    );
+
+    return _.set({}, keylessNamespace.concat([modelName]), reducedState);
   };
 
   // Generates an object of selectors.
@@ -141,17 +139,11 @@ export default function createSchema(
   // a mapStateToProps function.
   const selectorFunction = state => {
     return _.mapValues(selectors, selector =>
-      selector(get(state, `${reducer.namespace}.${modelName}`)));
+      selector(_.get(state, reducer.namespace.split('.').concat([modelName]))));
   };
 
   Object.defineProperty(reducer, 'schemaName', {
     value: modelName,
-    writable: false,
-    enumerable: false
-  });
-
-  Object.defineProperty(reducer, 'initialState', {
-    value: initialState,
     writable: false,
     enumerable: false
   });
@@ -173,6 +165,12 @@ export default function createSchema(
   Object.defineProperty(reducer, 'namespace', {
     value: 'schemas',
     writable: true,
+    enumerable: false
+  });
+
+  Object.defineProperty(reducer, 'clone', {
+    value: () => createSchema(...arguments),
+    writable: false,
     enumerable: false
   });
 
