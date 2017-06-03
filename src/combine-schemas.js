@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import createSchema from './createSchema';
 import reduceReducers from 'reduce-reducers';
-import { compose, createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
 export default function combineSchemas(schemaArray, namespace = 'schemas') {

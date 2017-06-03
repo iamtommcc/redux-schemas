@@ -25,10 +25,8 @@
     ]
   },
   "dependencies": {
-    "immutable": "^3.8.1",
     "lodash": "^4.17.4",
     "reduce-reducers": "^0.1.2",
-    "redux": "^3.6.0",
     "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
@@ -36,6 +34,7 @@
     "expect-predicate": "^1.0.0",
     "flux-standard-action": "^1.1.0",
     "husky": "^0.13.2",
+    "redux": "^3.6.0",
     "lint-staged": "^3.4.0",
     "nock": "^9.0.6",
     "nwb": "0.15.x",

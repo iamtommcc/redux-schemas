@@ -6,7 +6,6 @@ import {
   ASYNC_FAILURE_SUFFIX,
   createReducer
 } from './utils';
-import { combineReducers } from 'redux';
 import defaultLoadingReducer from './default-loading-reducer';
 
 /**
