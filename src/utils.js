@@ -1,10 +1,12 @@
-import _ from 'lodash';
+import get from 'lodash.get';
+import snakeCase from 'lodash.snakecase';
+import toUpper from 'lodash.toupper';
 export const ASYNC_SUCCESS_SUFFIX = '_SUCCESS';
 export const ASYNC_FAILURE_SUFFIX = '_FAILURE';
 
 export function createReducer(initialState, handlers, scope) {
   return function reducer(state = initialState, action) {
-    const scopedState = scope ? _.get(state, scope) : state;
+    const scopedState = scope ? get(state, scope) : state;
     if (!scopedState) return scopedState;
     if (handlers.hasOwnProperty(action.type)) {
       return handlers[action.type](scopedState, action);
@@ -15,20 +17,21 @@ export function createReducer(initialState, handlers, scope) {
 }
 
 export function createAction(type, payload, error, meta) {
-  return _.omitBy(
-    {
-      type,
-      payload,
-      error,
-      meta
-    },
-    _.isUndefined
+  const action = {
+    type,
+    payload,
+    error,
+    meta
+  };
+  Object.keys(action).forEach(
+    key => action[key] === undefined ? delete action[key] : ''
   );
+  return action;
 }
 
 export function generateActionCreator(actionName) {
   return (payload, error, meta) =>
-    createAction(_.toUpper(_.snakeCase(actionName)), payload, error, meta);
+    createAction(toUpper(snakeCase(actionName)), payload, error, meta);
 }
 
 export function generateAsyncActionCreator(actionName, request) {
@@ -40,7 +43,7 @@ export function generateAsyncActionCreator(actionName, request) {
         .then(response => {
           dispatch(
             createAction(
-              _.toUpper(_.snakeCase(`${actionName}${ASYNC_SUCCESS_SUFFIX}`)),
+              toUpper(snakeCase(`${actionName}${ASYNC_SUCCESS_SUFFIX}`)),
               response
             )
           );
@@ -48,7 +51,7 @@ export function generateAsyncActionCreator(actionName, request) {
         .catch(error => {
           dispatch(
             createAction(
-              _.toUpper(_.snakeCase(`${actionName}${ASYNC_FAILURE_SUFFIX}`)),
+              toUpper(snakeCase(`${actionName}${ASYNC_FAILURE_SUFFIX}`)),
               error,
               true
             )

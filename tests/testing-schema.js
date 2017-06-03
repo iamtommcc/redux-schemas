@@ -16,7 +16,7 @@ export default [
     addAsyncCustomLoading: {
       request: payload =>
         new Promise((resolve, reject) => {
-          if (_.isInteger(payload)) {
+          if (Number.isInteger(payload)) {
             resolve(payload);
           } else {
             reject();

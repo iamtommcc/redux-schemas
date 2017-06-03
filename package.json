@@ -25,7 +25,16 @@
     ]
   },
   "dependencies": {
-    "lodash": "^4.17.4",
+    "lodash.get": "^4.4.2",
+    "lodash.isfunction": "^3.0.8",
+    "lodash.isstring": "^4.0.1",
+    "lodash.keyby": "^4.6.0",
+    "lodash.merge": "^4.6.0",
+    "lodash.reduce": "^4.6.0",
+    "lodash.set": "^4.3.2",
+    "lodash.snakecase": "^4.1.1",
+    "lodash.toupper": "^4.1.2",
+    "object-map": "^1.0.2",
     "reduce-reducers": "^0.1.2",
     "redux-thunk": "^2.2.0"
   },
@@ -34,11 +43,11 @@
     "expect-predicate": "^1.0.0",
     "flux-standard-action": "^1.1.0",
     "husky": "^0.13.2",
-    "redux": "^3.6.0",
     "lint-staged": "^3.4.0",
     "nock": "^9.0.6",
     "nwb": "0.15.x",
     "prettier": "^0.22.0",
+    "redux": "^3.6.0",
     "redux-mock-store": "^1.2.2"
   },
   "author": "Thomas McCarthy <tom@tomm.cc>",

@@ -1,4 +1,11 @@
-import _ from 'lodash';
+import lodashGet from 'lodash.get';
+import reduce from 'lodash.reduce';
+import toUpper from 'lodash.toupper';
+import set from 'lodash.set';
+import mapObject from 'object-map';
+import snakeCase from 'lodash.snakecase';
+import isFunction from 'lodash.isfunction';
+
 import {
   generateAsyncActionCreator,
   generateActionCreator,
@@ -16,8 +23,8 @@ import defaultLoadingReducer from './default-loading-reducer';
  * @returns {*}
  */
 function get(object, prop) {
-  if (object && _.isFunction(object.get)) return object.get(prop);
-  return _.get(object, prop);
+  if (object && isFunction(object.get)) return object.get(prop);
+  return lodashGet(object, prop);
 }
 
 /**
@@ -43,7 +50,7 @@ export function generateReducerFunction(
 
     // If a meta (loading) reducer is provided, run it on the state
     // AFTER the normal reducer.
-    if (metaReducer && _.isFunction(metaReducer))
+    if (metaReducer && isFunction(metaReducer))
       newState = metaReducer(newState, action);
 
     // Redux expects normal reducers to return brand new
@@ -65,16 +72,16 @@ export default function createSchema(
   selectors,
   initialState
 ) {
-  const schema = _.reduce(
+  const schema = reduce(
     actionCreators,
     (resultObject, method, methodName) => {
-      const reduceLoading = _.isUndefined(method.reduceLoading)
+      const reduceLoading = method.reduceLoading === undefined
         ? defaultLoadingReducer
         : method.reduceLoading || {};
 
       // Dynamically create a base action name if one is not provided.
-      const actionName = _.toUpper(
-        method.actionName || `${modelName}_${_.snakeCase(methodName)}`
+      const actionName = toUpper(
+        method.actionName || `${modelName}_${snakeCase(methodName)}`
       );
 
       // If a request is passed, return a thunk.
@@ -86,7 +93,7 @@ export default function createSchema(
           )
         : generateActionCreator(actionName, method.actionCreator);
 
-      if (_.isFunction(method.reduce)) {
+      if (isFunction(method.reduce)) {
         resultObject.reducers[actionName] = generateReducerFunction(
           method.request ? state => state : method.reduce,
           method.request ? reduceLoading.initial || reduceLoading : null
@@ -126,19 +133,19 @@ export default function createSchema(
   const reducer = (state = {}, action) => {
     const keylessNamespace = reducer.namespace.split('.').slice(1);
     const reducedState = createReducer(initialState, schema.reducers)(
-      _.get(state, keylessNamespace.concat([modelName])),
+      lodashGet(state, keylessNamespace.concat([modelName])),
       action
     );
 
-    return _.set({}, keylessNamespace.concat([modelName]), reducedState);
+    return set({}, keylessNamespace.concat([modelName]), reducedState);
   };
 
   // Generates an object of selectors.
   // Can be easily fed into react-redux as
   // a mapStateToProps function.
   const selectorFunction = state => {
-    return _.mapValues(selectors, selector =>
-      selector(_.get(state, reducer.namespace.split('.').concat([modelName]))));
+    return mapObject(selectors, selector =>
+      selector(get(state, reducer.namespace.split('.').concat([modelName]))));
   };
 
   Object.defineProperty(reducer, 'schemaName', {

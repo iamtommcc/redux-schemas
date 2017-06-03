@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import mapObject from 'object-map';
 
 export default function withSchemas() {
   // withSchemas accepts either an array or a series of arguments
@@ -19,11 +19,11 @@ export default function withSchemas() {
   const generateActionCreators = dispatch => {
     return schemaArray.reduce(
       (acc, schema) => {
-        acc[schema.schemaName] = _.mapValues(schema.actionCreators, action =>
+        acc[schema.schemaName] = mapObject(schema.actionCreators, action =>
           payload => {
             const actionResult = action(payload);
 
-            if (_.isFunction(actionResult)) {
+            if (typeof actionResult === 'function') {
               return actionResult(dispatch);
             } else {
               return dispatch(actionResult);

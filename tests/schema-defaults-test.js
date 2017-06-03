@@ -46,7 +46,7 @@ describe('schemaDefaults', () => {
       });
     });
 
-    store.dispatch(action(null)).then(_.noop).catch(err => {
+    store.dispatch(action(null)).then(() => null).catch(err => {
       expect(store.getState()).toEqual({
         schemas: {
           counter: { error: 'error', number: 0 }

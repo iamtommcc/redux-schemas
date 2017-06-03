@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import isString from 'lodash.isstring';
 import createSchema from './createSchema';
 import reduceReducers from 'reduce-reducers';
 import thunk from 'redux-thunk';
@@ -7,7 +7,7 @@ export default function combineSchemas(schemaArray, namespace = 'schemas') {
   // combineSchemas accepts either an array or a series of arguments
   let schemas = Array.isArray(arguments[0]) ? arguments[0] : [...arguments];
 
-  if (_.isString(arguments[arguments.length - 1])) {
+  if (isString(arguments[arguments.length - 1])) {
     schemas = schemas.slice(0, -1);
   }
 

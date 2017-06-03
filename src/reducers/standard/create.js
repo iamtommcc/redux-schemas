@@ -1,3 +1,5 @@
+import merge from 'lodash.merge';
+
 export default {
   main: (state, action, options) => {
     return {
@@ -5,7 +7,7 @@ export default {
       [key]: {
         ...state[key],
         data: options.isOptimistic
-          ? _.merge({ ...(state[key].data || {}) }, action.payload)
+          ? merge({ ...(state[key].data || {}) }, action.payload)
           : state[key].data,
         isLoading: true
       }
@@ -18,7 +20,7 @@ export default {
         ...state[key],
         data: options.isOptimistic
           ? state[key].data
-          : _.merge({ ...(state[key].data || {}) }, action.payload),
+          : merge({ ...(state[key].data || {}) }, action.payload),
         isLoading: false
       }
     };

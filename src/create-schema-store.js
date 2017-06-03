@@ -1,11 +1,13 @@
-import _ from 'lodash';
+import keyBy from 'lodash.keyby';
+import assign from 'lodash.assign';
+import reduce from 'lodash.reduce';
 import createSchema from './createSchema';
 import reduceReducers from 'reduce-reducers';
 import { compose, createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
 export default function createSchemaStore(schemaArray, ...createStoreArgs) {
-  const schemaReducers = combineReducers(_.keyBy(schemaArray, 'schemaName'));
+  const schemaReducers = combineReducers(keyBy(schemaArray, 'schemaName'));
 
   const finalReducer = createStoreArgs[0]
     ? reduceReducers(schemaReducers, createStoreArgs[0])
@@ -14,8 +16,8 @@ export default function createSchemaStore(schemaArray, ...createStoreArgs) {
   // Combine schema initial stores with an overriding
   // initial store parameter (if provided);
   const initialState = {
-    schemas: _.assign(
-      _.reduce(
+    schemas: assign(
+      reduce(
         schemaArray,
         (acc, value) => {
           acc[value.schemaName] = value.initialState;

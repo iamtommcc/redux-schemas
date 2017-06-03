@@ -1,11 +1,11 @@
-import _ from 'lodash';
+import mapObject from 'object-map';
 import createSchema from './createSchema';
 
 export function schemaDefaults(defaultSettings) {
   return function(schemaName, actionCreators, selectors, initialState) {
     return createSchema(
       schemaName,
-      _.mapValues(actionCreators, actionCreator => {
+      mapObject(actionCreators, actionCreator => {
         return {
           ...defaultSettings,
           ...actionCreator
