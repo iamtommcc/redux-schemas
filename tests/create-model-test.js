@@ -1,10 +1,9 @@
-import createSchema from 'src/createSchema';
+import createSchema from 'src/create-schema';
 import expect from 'expect';
 import expectPredicate from 'expect-predicate';
 expect.extend(expectPredicate);
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import nock from 'nock';
 import * as utils from 'src/utils';
 import axios from 'axios';
 import { combineSchemas } from '../src/index';
@@ -28,8 +27,8 @@ describe('createSchema', () => {
     expect(store.getState()).toEqual({ schemas: { counter: { number: 3 } } });
   });
 
-  it('generates basic async reducers', () => {
-    const action = counter.actionCreators.addAsync(5);
+  it('generates basic async reducers with default reduceRequest - success', () => {
+    let action = counter.actionCreators.addAsync(5);
 
     return store.dispatch(action).then(() => {
       expect(store.getState()).toEqual({
@@ -37,6 +36,39 @@ describe('createSchema', () => {
           counter: { number: 5, isLoading: false, error: null }
         }
       });
+    });
+
+    action = counter.actionCreators.addAsync();
+    store.dispatch(action).catch(error => {
+      expect(store.getState()).toEqual({
+        schemas: {
+          counter: { number: 0, isLoading: false, error: 'yeah' }
+        }
+      });
+    });
+  });
+
+  it('generates basic async reducers with default reduceRequest - failure', () => {
+    let action = counter.actionCreators.addAsync();
+    return store.dispatch(action).catch(error => {
+      expect(store.getState()).toEqual({
+        schemas: {
+          counter: { number: 0, isLoading: false, error: 'Failure' }
+        }
+      });
+    });
+  });
+
+  it('can dispatch actions as side effects', () => {
+    const mockStore = configureMockStore([thunk])({});
+    const expectedActions = [
+      { type: 'COUNTER_DISPATCH_SIDE_EFFECTS' },
+      { type: 'COUNTER_DISPATCH_ANOTHER_ACTION' },
+      { type: 'COUNTER_DISPATCH_SIDE_EFFECTS_SUCCESS' }
+    ];
+    const action = counter.actionCreators.dispatchSideEffects();
+    return mockStore.dispatch(action).then(() => {
+      expect(mockStore.getActions()).toEqual(expectedActions);
     });
   });
 
@@ -73,5 +105,6 @@ describe('createSchema', () => {
 
     expect(counter.selectors(state).fixedSelector).toBe('Test');
     expect(counter.selectors(state).dynamicSelector).toBe(0);
+    expect(counter.selectors(state).globalStateSelector).toBe(0);
   });
 });

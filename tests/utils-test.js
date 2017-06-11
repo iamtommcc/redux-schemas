@@ -3,7 +3,6 @@ import expectPredicate from 'expect-predicate';
 expect.extend(expectPredicate);
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import nock from 'nock';
 import { isFSA } from 'flux-standard-action';
 import * as utils from 'src/utils';
 import axios from 'axios';
@@ -47,42 +46,43 @@ describe('generateActionCreator', () => {
 });
 
 describe('generateAsyncActionCreator', () => {
-  const actionToDispatch = utils.generateAsyncActionCreator('ACTION', () =>
-    axios('http://localhost/books'))();
   const store = mockStore({});
 
   afterEach(() => {
-    nock.cleanAll();
+    store.clearActions();
   });
 
   it('dispatches successful promises', () => {
-    nock('http://localhost').get('/books').reply(200, { bookId: 1 });
-
+    const actionToDispatch = utils.generateAsyncActionCreator('ACTION', () =>
+      Promise.resolve({ bookId: 1 }))(1);
     const expectedActions = [
-      { type: 'ACTION' },
-      { type: 'ACTION_SUCCESS', payload: { bookId: 1 } }
+      { type: 'ACTION', payload: 1 },
+      {
+        type: 'ACTION_SUCCESS',
+        payload: { bookId: 1 },
+        meta: { originalPayload: 1 }
+      }
     ];
 
-    store.dispatch(actionToDispatch).then(() => {
+    return store.dispatch(actionToDispatch).then(() => {
       expect(store.getActions()).toEqual(expectedActions);
     });
   });
 
   it('dispatches failing promises', () => {
-    nock('http://localhost')
-      .get('/books')
-      .reply(400, { errorMessage: 'Failed!' });
-
+    const actionToDispatch = utils.generateAsyncActionCreator('ACTION', () =>
+      Promise.reject('Error'))(1);
     const expectedActions = [
-      { type: 'ACTION' },
+      { type: 'ACTION', payload: 1 },
       {
         type: 'ACTION_FAILURE',
-        payload: { errorMessage: 'Failed!' },
-        error: true
+        payload: 'Error',
+        error: true,
+        meta: { originalPayload: 1 }
       }
     ];
 
-    store.dispatch(actionToDispatch).catch(() => {
+    return store.dispatch(actionToDispatch).catch(() => {
       expect(store.getActions()).toEqual(expectedActions);
     });
   });

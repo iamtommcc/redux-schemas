@@ -1,4 +1,4 @@
-import createSchema from '../../../../src/createSchema';
+import createSchema from '../../../../src/create-schema';
 
 export default createSchema(
   'books',

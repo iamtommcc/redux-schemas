@@ -1,6 +1,7 @@
 import get from 'lodash.get';
 import snakeCase from 'lodash.snakecase';
 import toUpper from 'lodash.toupper';
+import mapObject from 'object-map';
 export const ASYNC_SUCCESS_SUFFIX = '_SUCCESS';
 export const ASYNC_FAILURE_SUFFIX = '_FAILURE';
 
@@ -34,17 +35,31 @@ export function generateActionCreator(actionName) {
     createAction(toUpper(snakeCase(actionName)), payload, error, meta);
 }
 
-export function generateAsyncActionCreator(actionName, request) {
+export function generateAsyncActionCreator(
+  actionName,
+  request,
+  actionCreators
+) {
   return payload => {
     return dispatch => {
       dispatch(createAction(actionName, payload));
 
-      return request(payload)
+      const schema = mapObject(actionCreators, actionCreator => {
+        return payload => dispatch(actionCreator(payload));
+      });
+
+      return request(payload, schema, dispatch)
         .then(response => {
+          // Note that for flexibility, we are passing along
+          // both the response AND the original payload.
+          // This is useful if the API you are interfacing with
+          // doesn't provide verbose responses.
           dispatch(
             createAction(
               toUpper(snakeCase(`${actionName}${ASYNC_SUCCESS_SUFFIX}`)),
-              response
+              response,
+              undefined,
+              payload ? { originalPayload: payload } : undefined
             )
           );
         })
@@ -53,9 +68,11 @@ export function generateAsyncActionCreator(actionName, request) {
             createAction(
               toUpper(snakeCase(`${actionName}${ASYNC_FAILURE_SUFFIX}`)),
               error,
-              true
+              true,
+              payload ? { originalPayload: payload } : undefined
             )
           );
+          throw error;
         });
     };
   };

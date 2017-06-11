@@ -10,7 +10,7 @@ const middleware = applyMiddleware(thunk);
 
 describe('schemaDefaults', () => {
   it('creates a createSchema function with custom defaults', () => {
-    const counter = schemaDefaults({ reduceLoading: null })(
+    const counter = schemaDefaults({ reduceRequest: null })(
       'counter',
       ...testingSchema
     );
@@ -27,7 +27,7 @@ describe('schemaDefaults', () => {
   });
 
   it('does not use custom defaults if options are actually set', () => {
-    const counter = schemaDefaults({ reduceLoading: null })(
+    const counter = schemaDefaults({ reduceRequest: null })(
       'counter',
       ...testingSchema
     );

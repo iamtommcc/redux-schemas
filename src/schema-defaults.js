@@ -1,5 +1,5 @@
 import mapObject from 'object-map';
-import createSchema from './createSchema';
+import createSchema from './create-schema';
 
 export function schemaDefaults(defaultSettings) {
   return function(schemaName, actionCreators, selectors, initialState) {

@@ -39,12 +39,10 @@
     "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
-    "axios": "^0.15.3",
     "expect-predicate": "^1.0.0",
     "flux-standard-action": "^1.1.0",
     "husky": "^0.13.2",
     "lint-staged": "^3.4.0",
-    "nock": "^9.0.6",
     "nwb": "0.15.x",
     "prettier": "^0.22.0",
     "redux": "^3.6.0",

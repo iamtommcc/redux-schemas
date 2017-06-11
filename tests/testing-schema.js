@@ -5,8 +5,19 @@ export default [
         return { number: (state.number || 0) + action.payload };
       }
     },
+    dispatchSideEffects: {
+      request: (payload, schema, dispatch) =>
+        Promise.resolve().then(schema.dispatchAnotherAction()),
+      reduce: state => state
+    },
+    dispatchAnotherAction: {
+      reduce: state => state
+    },
     addAsync: {
-      request: payload => new Promise(resolve => resolve(payload)),
+      request: payload =>
+        new Promise(
+          (resolve, reject) => payload ? resolve(payload) : reject('Failure')
+        ),
       reduce: {
         success: (state, action) => {
           return { number: (state.number || 0) + action.payload };
@@ -27,7 +38,7 @@ export default [
           return { number: (state.number || 0) + action.payload };
         }
       },
-      reduceloading: {
+      reduceRequest: {
         initial: state => state,
         success: (state, action) => {
           return {
@@ -46,7 +57,9 @@ export default [
   },
   {
     fixedSelector: state => 'Test',
-    dynamicSelector: state => state.number
+    dynamicSelector: state => state.number,
+    globalStateSelector: (state, globalState) =>
+      globalState.schemas.counter.number
   },
   {
     number: 0

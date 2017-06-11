@@ -1,4 +1,4 @@
-import createSchema from './createSchema';
+import createSchema from './create-schema';
 export { default as thunk } from 'redux-thunk';
 export default createSchema;
 export { schemaDefaults } from './schema-defaults';

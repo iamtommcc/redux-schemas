@@ -1,5 +1,5 @@
 import isString from 'lodash.isstring';
-import createSchema from './createSchema';
+import createSchema from './create-schema';
 import reduceReducers from 'reduce-reducers';
 import thunk from 'redux-thunk';
 

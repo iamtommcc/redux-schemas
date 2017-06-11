@@ -1,4 +1,4 @@
-import lodashGet from 'lodash.get';
+import get from 'lodash.get';
 import reduce from 'lodash.reduce';
 import toUpper from 'lodash.toupper';
 import set from 'lodash.set';
@@ -16,33 +16,19 @@ import {
 import defaultLoadingReducer from './default-loading-reducer';
 
 /**
- * Simple getter function to support either standard objects
- * or immutables.
- * @param object
- * @param prop
- * @returns {*}
- */
-function get(object, prop) {
-  if (object && isFunction(object.get)) return object.get(prop);
-  return lodashGet(object, prop);
-}
-
-/**
  * Generates a normal Redux reducer function that takes
  * an action and returns the new global state.
  *
  *
  * @param mainReducer The 'main' reduce function
- * @param metaReducer An optional meta reducer that runs after the main
+ * @param requestReducer An optional request reducer that runs after the main
  * @returns {Function}
  */
 export function generateReducerFunction(
   mainReducer = null,
-  metaReducer = null
+  requestReducer = null
 ) {
   return function(state, action) {
-    if (!state) return {};
-
     let newState = state;
 
     // Run the main reducer.
@@ -50,8 +36,8 @@ export function generateReducerFunction(
 
     // If a meta (loading) reducer is provided, run it on the state
     // AFTER the normal reducer.
-    if (metaReducer && isFunction(metaReducer))
-      newState = metaReducer(newState, action);
+    if (requestReducer && isFunction(requestReducer))
+      newState = requestReducer(newState, action);
 
     // Redux expects normal reducers to return brand new
     // global state, so if we're using scoping, we have
@@ -75,11 +61,12 @@ export default function createSchema(
   const schema = reduce(
     actionCreators,
     (resultObject, method, methodName) => {
-      const reduceLoading = method.reduceLoading === undefined
+      // Fall back to default reduceRequest behaviour if none provided.
+      const reduceRequest = method.reduceRequest === undefined
         ? defaultLoadingReducer
-        : method.reduceLoading || {};
+        : method.reduceRequest || {};
 
-      // Dynamically create a base action name if one is not provided.
+      // Create a base action name if one is not provided.
       const actionName = toUpper(
         method.actionName || `${modelName}_${snakeCase(methodName)}`
       );
@@ -89,19 +76,19 @@ export default function createSchema(
         ? generateAsyncActionCreator(
             actionName,
             method.request,
-            method.actionCreator
+            resultObject.actionCreators
           )
-        : generateActionCreator(actionName, method.actionCreator);
+        : generateActionCreator(actionName);
 
       if (isFunction(method.reduce)) {
         resultObject.reducers[actionName] = generateReducerFunction(
           method.request ? state => state : method.reduce,
-          method.request ? reduceLoading.initial || reduceLoading : null
+          method.request ? reduceRequest.initial || reduceRequest : null
         );
       } else {
         resultObject.reducers[actionName] = generateReducerFunction(
           method.reduce.initial,
-          method.request ? reduceLoading.initial : null
+          method.request ? reduceRequest.initial : null
         );
       }
 
@@ -110,13 +97,13 @@ export default function createSchema(
           `${actionName}${ASYNC_SUCCESS_SUFFIX}`
         ] = generateReducerFunction(
           method.reduce.success || method.reduce,
-          reduceLoading.success
+          reduceRequest.success
         );
         resultObject.reducers[
           `${actionName}${ASYNC_FAILURE_SUFFIX}`
         ] = generateReducerFunction(
           method.reduce.failure,
-          reduceLoading.failure
+          reduceRequest.failure
         );
       }
 
@@ -133,7 +120,7 @@ export default function createSchema(
   const reducer = (state = {}, action) => {
     const keylessNamespace = reducer.namespace.split('.').slice(1);
     const reducedState = createReducer(initialState, schema.reducers)(
-      lodashGet(state, keylessNamespace.concat([modelName])),
+      get(state, keylessNamespace.concat([modelName])),
       action
     );
 
@@ -145,7 +132,10 @@ export default function createSchema(
   // a mapStateToProps function.
   const selectorFunction = state => {
     return mapObject(selectors, selector =>
-      selector(get(state, reducer.namespace.split('.').concat([modelName]))));
+      selector(
+        get(state, reducer.namespace.split('.').concat([modelName])),
+        state
+      ));
   };
 
   Object.defineProperty(reducer, 'schemaName', {
