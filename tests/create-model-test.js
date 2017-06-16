@@ -5,19 +5,35 @@ expect.extend(expectPredicate);
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import * as utils from 'src/utils';
-import axios from 'axios';
 import { combineSchemas } from '../src/index';
 import { combineReducers, createStore, applyMiddleware } from 'redux';
 import testingSchema from './testing-schema';
 
 const middleware = applyMiddleware(thunk);
 const counter = createSchema('counter', ...testingSchema);
+const counter2 = createSchema('counter2', ...testingSchema);
 const schemas = combineSchemas([counter]);
 let store;
 
 describe('createSchema', () => {
   beforeEach(() => {
     store = createStore(combineReducers({ schemas }), {}, middleware);
+  });
+
+  it('can combine multiple schemas', () => {
+    const customNamespaceSchemas = combineSchemas([counter, counter2]);
+    store = createStore(
+      combineReducers({ schemas: customNamespaceSchemas }),
+      {},
+      middleware
+    );
+
+    expect(store.getState()).toEqual({
+      schemas: {
+        counter: { number: 0 },
+        counter2: { number: 0 }
+      }
+    });
   });
 
   it('generates basic sync reducers', () => {

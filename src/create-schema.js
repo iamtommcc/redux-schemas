@@ -118,7 +118,10 @@ export default function createSchema(
   // Redux only scopes one level deep by default
   // We need to scope a little further
   const reducer = (state = {}, action) => {
+    // remove the top level part of the namespace
+    // by default: "schemas"
     const keylessNamespace = reducer.namespace.split('.').slice(1);
+
     const reducedState = createReducer(initialState, schema.reducers)(
       get(state, keylessNamespace.concat([modelName])),
       action
@@ -130,11 +133,12 @@ export default function createSchema(
   // Generates an object of selectors.
   // Can be easily fed into react-redux as
   // a mapStateToProps function.
-  const selectorFunction = state => {
+  const selectorFunction = (globalState, props) => {
     return mapObject(selectors, selector =>
       selector(
-        get(state, reducer.namespace.split('.').concat([modelName])),
-        state
+        get(globalState, reducer.namespace.split('.').concat([modelName])),
+        globalState,
+        props
       ));
   };
 

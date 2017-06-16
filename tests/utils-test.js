@@ -5,7 +5,6 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { isFSA } from 'flux-standard-action';
 import * as utils from 'src/utils';
-import axios from 'axios';
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);

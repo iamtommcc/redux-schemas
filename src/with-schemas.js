@@ -41,12 +41,13 @@ export default function withSchemas() {
     // (since selectors are optional)
     const schemaName = Object.keys(dispatchProps)[0];
 
+    const schemaProps = mapObject(stateProps, (selectors, schemaName) => {
+      return { ...selectors, ...dispatchProps[schemaName] };
+    });
+
     return {
       ...ownProps,
-      [schemaName]: {
-        ...stateProps[schemaName],
-        ...dispatchProps[schemaName]
-      }
+      ...schemaProps
     };
   };
 

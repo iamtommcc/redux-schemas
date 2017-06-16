@@ -1,6 +1,7 @@
 import isString from 'lodash.isstring';
 import createSchema from './create-schema';
 import reduceReducers from 'reduce-reducers';
+import flatCombineReducers from 'flat-combine-reducers';
 import thunk from 'redux-thunk';
 
 export default function combineSchemas(schemaArray, namespace = 'schemas') {
@@ -17,7 +18,12 @@ export default function combineSchemas(schemaArray, namespace = 'schemas') {
     return newSchema;
   });
 
-  const finalReducer = reduceReducers(...processedSchemas);
+  const schemaObject = {};
+  processedSchemas.forEach(schema => {
+    schemaObject[schema.schemaName] = schema;
+  });
+
+  const finalReducer = flatCombineReducers(...processedSchemas);
 
   return finalReducer;
 }

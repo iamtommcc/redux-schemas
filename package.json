@@ -1,6 +1,6 @@
 {
   "name": "redux-schemas",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A cure to Redux boilerplate.",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -25,6 +25,7 @@
     ]
   },
   "dependencies": {
+    "flat-combine-reducers": "^0.1.2",
     "lodash.get": "^4.4.2",
     "lodash.isfunction": "^3.0.8",
     "lodash.isstring": "^4.0.1",
@@ -35,7 +36,6 @@
     "lodash.snakecase": "^4.1.1",
     "lodash.toupper": "^4.1.2",
     "object-map": "^1.0.2",
-    "reduce-reducers": "^0.1.2",
     "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
