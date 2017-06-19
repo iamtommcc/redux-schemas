@@ -1,4 +1,4 @@
-# redux-schemas
+# redux-schemas ![stability](https://img.shields.io/badge/stability-experimental-orange.svg)
 
 `redux-schemas` is a small library designed to abstract away the verbosity & boilerplate that comes when using Redux, particularly when dealing with async actions.
 
