@@ -1,6 +1,5 @@
 import isString from 'lodash.isstring';
 import createSchema from './create-schema';
-import reduceReducers from 'reduce-reducers';
 import flatCombineReducers from 'flat-combine-reducers';
 import thunk from 'redux-thunk';
 
