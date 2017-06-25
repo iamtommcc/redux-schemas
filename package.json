@@ -1,6 +1,6 @@
 {
   "name": "redux-schemas",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A cure to Redux boilerplate.",
   "main": "lib/index.js",
   "module": "es/index.js",

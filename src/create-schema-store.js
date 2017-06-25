@@ -2,7 +2,6 @@ import keyBy from 'lodash.keyby';
 import assign from 'lodash.assign';
 import reduce from 'lodash.reduce';
 import createSchema from './create-schema';
-import reduceReducers from 'reduce-reducers';
 import { compose, createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
