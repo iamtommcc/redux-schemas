@@ -1,6 +1,6 @@
 import isString from 'lodash.isstring';
 import createSchema from './create-schema';
-import flatCombineReducers from 'flat-combine-reducers';
+import { flatCombineReducers } from './utils';
 import thunk from 'redux-thunk';
 
 export default function combineSchemas(schemaArray, namespace = 'schemas') {

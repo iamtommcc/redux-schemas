@@ -5,6 +5,36 @@ import mapObject from 'object-map';
 export const ASYNC_SUCCESS_SUFFIX = '_SUCCESS';
 export const ASYNC_FAILURE_SUFFIX = '_FAILURE';
 
+const defaultOptions = {
+  mergePrevState: true
+};
+
+function partitionArgs(args) {
+  const lastArgs = args[args.length - 1];
+
+  if (typeof lastArgs !== 'function') {
+    return [args.slice(0, args.length - 1), lastArgs];
+  }
+
+  return [args];
+}
+
+export function flatCombineReducers() {
+  const [inputReducers, inputOptions] = partitionArgs([...arguments]);
+
+  const options = Object.assign({}, defaultOptions, inputOptions);
+
+  const reducers = options.mergePrevState
+    ? [x => x].concat(inputReducers)
+    : inputReducers;
+
+  return (prevState, action) =>
+    reducers.reduce(
+      (state, reducer) => Object.assign({}, state, reducer(prevState, action)),
+      {}
+    );
+}
+
 export function createReducer(initialState, handlers, scope) {
   return function reducer(state = initialState, action) {
     const scopedState = scope ? get(state, scope) : state;

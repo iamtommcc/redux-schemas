@@ -1,10 +1,10 @@
-import createSchema from 'src/create-schema';
+import createSchema from '../src/create-schema';
 import expect from 'expect';
 import expectPredicate from 'expect-predicate';
 expect.extend(expectPredicate);
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import * as utils from 'src/utils';
+import * as utils from '../src/utils';
 import { combineSchemas } from '../src/index';
 import { combineReducers, createStore, applyMiddleware } from 'redux';
 import testingSchema from './testing-schema';
